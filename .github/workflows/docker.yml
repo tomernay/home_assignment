@@ -1,0 +1,35 @@
+name: Docker Compose CI
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # clone the repository into the GitHub Actions runner.
+    - name: Check out the repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    # install Docker Compose in the runner
+    - name: Install Docker Compose
+      run: sudo apt-get update && sudo apt-get install -y docker-compose
+
+    - name: Build and run docker-compose
+      run: |
+        docker-compose up --build -d
+        docker wait $(docker-compose ps -q tester) > result.txt
+        if [ "$(cat result.txt)" -eq "0" ]; then
+          echo "Tests passed" > succeeded
+        else
+          echo "Tests failed" > fail
+        fi
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: result
+        path: succeeded
