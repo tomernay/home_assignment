@@ -1,0 +1,16 @@
+version: '3'
+services:
+  nginx:
+    build:
+      context: ./Server
+      dockerfile: nginx.Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+
+  tester:
+    build:
+      context: ./Client
+      dockerfile: tester.Dockerfile
+    depends_on:
+      - nginx
